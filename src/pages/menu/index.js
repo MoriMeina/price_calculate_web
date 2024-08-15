@@ -5,11 +5,10 @@ import CostTable from "../../components/costTable";
 
 const {Header, Content, Sider} = Layout;
 
-const NavSide = () => {
+const NavSide = ({ setVersionSelected, setSelectedProject }) => {
     const [treeData, setTreeData] = useState([]);
     const [versionData, setVersionData] = useState([]);
-    const [versionSelected, setVersionSelected] = useState('2024');
-    const [selectedProject, setSelectedProject] = useState([]);
+    const [defaultProject,setDefaultProject] = useState([]);
 
     useEffect(() => {
         axios.get('http://127.0.0.1:5000/getServiceByTree')
@@ -29,36 +28,45 @@ const NavSide = () => {
                 console.error('Error fetching version data:', error);
                 setVersionData([]);
             });
+        axios.get('http://127.0.0.1:5000/getAllService')
+            .then(response => {
+                setDefaultProject(Array.isArray(response.data) ? response.data : []);
+                setSelectedProject(Array.isArray(response.data) ? response.data : []);
+            })
+            .catch(error => {
+                console.error('Error fetching version data:', error);
+                setDefaultProject([]);
+            });
     }, []);
 
     const onTreeSelectChange = (value) => {
-        console.log('选中系统:', value);
+        // console.log('选中系统:', value);
         setSelectedProject(value);
     };
 
     const onVersionChange = (value) => {
         setVersionSelected(value);
-        console.log('选择计费版本:', versionSelected);
+        // console.log('选择计费版本:', value);
     };
 
     return (
         <>
             <TreeSelect
                 showSearch
-                value={selectedProject}
                 maxTagCount={0}
-                dropdownStyle={{maxHeight: 400, overflow: 'auto'}}
-                placeholder="Please select"
+                value={defaultProject}
+                dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
+                placeholder="选择项目系统"
                 allowClear
                 treeCheckable={true}
-                treeDefaultExpandAll
+                // treeDefaultExpandAll
                 onChange={onTreeSelectChange}
                 treeData={treeData}
-                style={{width: 300}}
+                style={{ width: 300 }}
             />
             <Select
                 defaultValue="2024"
-                style={{width: 120}}
+                style={{ width: 120 }}
                 onChange={onVersionChange}
                 options={versionData}
             />
@@ -66,7 +74,12 @@ const NavSide = () => {
     );
 };
 
-const BillingSummary = () => <CostTable/>;
+const BillingSummary = ({ versionSelected, selectedProject }) => {
+    console.log("向子组件传参(计费版本选择):",versionSelected)
+    console.log("向子组件传参(项目选择):",selectedProject)
+    return <CostTable Version={versionSelected} Project={selectedProject}/>;
+};
+
 const DistrictEdit = () => <div>区县编辑内容</div>;
 const BillingPrice = () => <div>计费价格内容</div>;
 const OwnershipApp = () => <div>归属应用内容</div>;
@@ -95,19 +108,21 @@ const LeftSide = ({onMenuSelect}) => {
 
 const MenuComponent = () => {
     const [selectedMenuKey, setSelectedMenuKey] = useState('billingSummary');
+    const [versionSelected, setVersionSelected] = useState('2024');
+    const [selectedProject, setSelectedProject] = useState([]);
 
     const renderContent = () => {
         switch (selectedMenuKey) {
             case 'billingSummary':
-                return <BillingSummary/>;
+                return <BillingSummary versionSelected={versionSelected} selectedProject={selectedProject} />;
             case 'districtEdit':
-                return <DistrictEdit/>;
+                return <DistrictEdit />;
             case 'billingPrice':
-                return <BillingPrice/>;
+                return <BillingPrice />;
             case 'ownershipApp':
-                return <OwnershipApp/>;
+                return <OwnershipApp />;
             case 'extraCost':
-                return <ExtraCost/>;
+                return <ExtraCost />;
             default:
                 return null;
         }
@@ -117,29 +132,31 @@ const MenuComponent = () => {
         <Layout>
             <Header
                 style={{
-                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',backgroundColor: '#fff', padding: '0 24px', height: '8vh', borderBottom: '1px solid #f0f0f0',
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between'
                 }}
             >
-                <NavSide/>
+                <NavSide
+                    setVersionSelected={setVersionSelected}
+                    setSelectedProject={setSelectedProject}
+                />
             </Header>
             <Layout>
                 <Sider
                     width={200}
                     style={{
-                        height: '93vh',
+                        minHeight: "700px",
+                        height: '92.5vh',
                         background: '#fff',
+                        borderRight: '1px solid #f0f0f0',
                     }}
                 >
                     <LeftSide onMenuSelect={setSelectedMenuKey}/>
                 </Sider>
-                <Layout
-                    style={{
-                        padding: '0 24px 24px',
-                    }}
-                >
+                <Layout>
                     <Content
                         style={{
-                            padding: 24,
+                            minWidth: "1000px",
+                            padding: 5,
                             margin: 0,
                             minHeight: 280,
                             background: '#fff',
