@@ -1,8 +1,10 @@
 import React, {useEffect, useState} from 'react';
-import {Button, ConfigProvider, DatePicker, Input, Modal, Popover, Select, Space, Table} from "antd";
+import {ConfigProvider, DatePicker, Input, Popover, Select, Space, Table} from "antd";
 import axios from "axios";
 import zhCN from "antd/locale/zh_CN";
 import dayjs from "dayjs";
+import AddResourceButton from "../AddResourceButton";
+import ResourceExport from "../ResourceExport";
 
 const CostTable = (props) => {
     const {RangePicker} = DatePicker;
@@ -18,17 +20,13 @@ const CostTable = (props) => {
     const [paymentFilters, setPaymentFilters] = useState([]);
 
     const renderWithEllipsis = (text) => (<Popover content={text}>
-            <div style={{whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'}}>
-                {text}
-            </div>
-        </Popover>);
+        <div style={{whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'}}>
+            {text}
+        </div>
+    </Popover>);
 
     const TableColumn = [{
-        title: '资源类型',
-        width: 100,
-        dataIndex: 'resource_type',
-        key: 'resource_type',
-        fixed: 'left'
+        title: '资源类型', width: 100, dataIndex: 'resource_type', key: 'resource_type', fixed: 'left'
     }, {
         title: '资源名',
         width: 200,
@@ -59,34 +57,23 @@ const CostTable = (props) => {
         ellipsis: true,
         render: renderWithEllipsis
     }, {title: 'IP地址', dataIndex: 'ip', key: 'ip', width: 150}, {
-        title: '弹性IP地址',
-        dataIndex: 'eip',
-        key: 'eip',
-        width: 150
-    }, {title: '规格', dataIndex: 'subject', key: 'subject', width: 110}, {
-        title: '存储',
-        dataIndex: 'storage',
-        key: 'storage',
-        width: 175,
-        ellipsis: true,
-        render: renderWithEllipsis
-    }, {title: '创建时间', dataIndex: 'start_time', key: 'start_time', width: 150}, {
-        title: '每月费用',
-        dataIndex: 'monthly_price',
-        key: 'monthly_price',
-        width: 95
-    }, {title: '计费月数', dataIndex: 'cost_month', key: 'cost_month', width: 95}, {
-        title: '总计价格',
-        dataIndex: 'all_price',
-        key: 'all_price',
-        width: 100
+        title: '弹性IP地址', dataIndex: 'eip', key: 'eip', width: 150
     }, {
-        title: '备注',
-        dataIndex: 'comment',
-        key: 'comment',
-        width: 250,
-        ellipsis: true,
-        render: renderWithEllipsis
+        title: '系统', dataIndex: 'system', key: 'system', width: 150, ellipsis: true, render: renderWithEllipsis
+    }, {title: '规格', dataIndex: 'subject', key: 'subject', width: 110}, {
+        title: '存储', dataIndex: 'storage', key: 'storage', width: 175, ellipsis: true, render: renderWithEllipsis
+    }, {
+        title: '额外计费', dataIndex: 'add_fee', key: 'add_fee', width: 175, ellipsis: true, render: renderWithEllipsis
+    }, {title: '创建时间', dataIndex: 'start_time', key: 'start_time', width: 150}, {
+        title: '每月费用', dataIndex: 'monthly_price', key: 'monthly_price', width: 95
+    }, {title: '计费月数', dataIndex: 'cost_month', key: 'cost_month', width: 95}, {
+        title: '总计价格', dataIndex: 'all_price', key: 'all_price', width: 100
+    }, {
+        title: '备注', dataIndex: 'comment', key: 'comment', width: 250, ellipsis: true, render: renderWithEllipsis
+    }, {
+        title: '客户', dataIndex: 'client', key: 'client', width: 100, ellipsis: true,
+    }, {
+        title: '手机号', dataIndex: 'client_phone', key: 'client_phone', width: 130, ellipsis: true,
     }, {title: '操作', key: 'operation', fixed: 'right', width: 100},];
 
     const SearchOptions = [{value: 'ip', label: 'IP地址'}, {value: '资源名', label: '资源名'},];
@@ -113,7 +100,7 @@ const CostTable = (props) => {
             setTableLoading(true);
             try {
                 const response = await axios.post('http://127.0.0.1:5000/DescribeCost', PostBody);
-                const uniquePayments = [...new Set(response.data.map(item => item.payment))];
+                const uniquePayments = [...new Set(response.data.map(({payment}) => payment))];
                 const filters = uniquePayments.map(payment => ({text: payment, value: payment}));
                 setPaymentFilters(filters);
                 setTableData(response.data);
@@ -125,52 +112,11 @@ const CostTable = (props) => {
         };
 
         if (props.Version && props.Project && costMonth.length > 0) {
-            fetchData();
+            fetchData().then(r => console.log(r))
         }
 
-    }, [props.Version, props.Project, costMonth, searchValue]);
+    }, [props.Version, props.Project, costMonth, searchValue, searchOption]);
 
-    const AddButton = () => {
-        const [isModalOpen, setIsModalOpen] = React.useState(false);
-        const showModal = () => {
-            setIsModalOpen(true);
-        };
-        const handleOK = () => {
-            setIsModalOpen(false);
-        };
-        const handleCancel = () => {
-            setIsModalOpen(false);
-        };
-        return (<>
-                <Button type="primary" onClick={showModal} style={{margin: "0.25rem"}}>添加</Button>
-                <Modal title="添加资源" open={isModalOpen} onOk={handleOK} onCancel={handleCancel}>
-                    <p>Some contents...</p>
-                    <p>Some contents...</p>
-                    <p>Some contents...</p>
-                </Modal>
-            </>);
-    };
-
-    const ExportButton = () => {
-        const [isModalOpen, setIsModalOpen] = React.useState(false);
-        const showModal = () => {
-            setIsModalOpen(true);
-        };
-        const handleOK = () => {
-            setIsModalOpen(false);
-        };
-        const handleCancel = () => {
-            setIsModalOpen(false);
-        };
-        return (<>
-                <Button type="default" onClick={showModal} style={{margin: "0.25rem"}}>导出资源</Button>
-                <Modal title="导出资源" open={isModalOpen} onOk={handleOK} onCancel={handleCancel}>
-                    <p>Some contents...</p>
-                    <p>Some contents...</p>
-                    <p>Some contents...</p>
-                </Modal>
-            </>);
-    };
 
     const handleDateChange = (dates) => {
         if (dates) {
@@ -189,41 +135,37 @@ const CostTable = (props) => {
         console.log("搜索的内容", searchValue)
     }
     return (<>
-            <div style={{display: "flex", flexDirection: "column", alignItems: "center"}}>
-                <div style={{
-                    display: "flex",
-                    flexDirection: "row",
-                    justifyContent: "space-between",
-                    width: "100%",
-                    padding: "10px"
-                }}>
-                    <div>
-                        <AddButton/>
-                        <Space.Compact>
-                            <Select defaultValue="ip" options={SearchOptions} onSelect={onSearchOptionSelect}/>
-                            <Input placeholder={searchFor} onChange={onSearchValueChange}/>
-                        </Space.Compact>
-                    </div>
-                    <div>
-                        <ConfigProvider locale={zhCN}>
-                            <RangePicker picker="month" onChange={handleDateChange} defaultValue={defaultSelectedDate}/>
-                        </ConfigProvider>
-                        <ExportButton/>
-                    </div>
+        <div style={{display: "flex", flexDirection: "column", alignItems: "center"}}>
+            <div style={{
+                display: "flex", flexDirection: "row", justifyContent: "space-between", width: "100%", padding: "10px"
+            }}>
+                <div>
+                    <AddResourceButton/>
+                    <Space.Compact>
+                        <Select defaultValue="ip" options={SearchOptions} onSelect={onSearchOptionSelect}/>
+                        <Input placeholder={searchFor} onChange={onSearchValueChange}/>
+                    </Space.Compact>
                 </div>
-                <Table
-                    columns={TableColumn}
-                    dataSource={tableData}
-                    scroll={{
-                        x: 1500, y: "72.5vh"
-                    }}
-                    loading={TableLoading}
-                    sticky={{
-                        offsetHeader: 64,
-                    }}
-                />
+                <div>
+                    <ConfigProvider locale={zhCN}>
+                        <RangePicker picker="month" onChange={handleDateChange} defaultValue={defaultSelectedDate}/>
+                    </ConfigProvider>
+                    <ResourceExport/>
+                </div>
             </div>
-        </>);
+            <Table
+                columns={TableColumn}
+                dataSource={tableData}
+                scroll={{
+                    x: 1500, y: "72.5vh"
+                }}
+                loading={TableLoading}
+                sticky={{
+                    offsetHeader: 64,
+                }}
+            />
+        </div>
+    </>);
 };
 
 export default CostTable;
