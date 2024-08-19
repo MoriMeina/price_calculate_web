@@ -5,7 +5,7 @@ import {MinusCircleOutlined, PlusOutlined} from "@ant-design/icons";
 
 const {Option} = Select;
 
-const AddButton = () => {
+const AddButton = (props) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [confirmLoading, setConfirmLoading] = useState(false);
     const [form] = Form.useForm();
@@ -18,6 +18,7 @@ const AddButton = () => {
     const [addFee, setAddFee] = useState([]);
     const [visibleFields, setVisibleFields] = useState({});
     const [addRequest, setAddRequest] = useState({});
+    const [addVersion, setAddVersion] = useState('2024');
 
 
     const second_unit = Form.useWatch('second_unit', form);
@@ -40,6 +41,7 @@ const AddButton = () => {
     const addFeeValue = Form.useWatch('addFee', form);
 
 
+    const {version} = props;
     const resourceType = [{
         label: <span>计算</span>, title: 'compute', options: [{label: <span>ECS云服务器</span>, value: 'ECS'},],
     }, {
@@ -52,6 +54,7 @@ const AddButton = () => {
         label: <span>网络服务</span>, title: 'network', options: [{label: <span>SLB负载均衡</span>, value: 'SLB'},],
     },];
 
+    useEffect(() => {setAddVersion(props.version)},[props.version])
     useEffect(() => {
         form.setFieldsValue({product: 'ECS'});
         // Fetch the tree data
@@ -62,7 +65,8 @@ const AddButton = () => {
             .catch((error) => {
                 console.error("Error fetching the tree data:", error);
             });
-        axios.get("http://127.0.0.1:5000/GetAddFee")
+        console.log("version", version);
+        axios.get("http://127.0.0.1:5000/GetAddFee", {params: {addVersion}}) // 带上 version 参数
             .then((response) => {
                 setAddFee(response.data);
             })
@@ -79,8 +83,6 @@ const AddButton = () => {
             eip: true,
             start_time: true,
         });
-
-
     }, []);
 
     const onCityChange = (value) => {
@@ -224,7 +226,6 @@ const AddButton = () => {
     // Only re-run when these fields change
 
     const showModal = () => {
-
         setIsModalOpen(true);
     };
 

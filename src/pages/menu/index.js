@@ -8,7 +8,7 @@ const {Header, Content, Sider} = Layout;
 const NavSide = ({ setVersionSelected, setSelectedProject }) => {
     const [treeData, setTreeData] = useState([]);
     const [versionData, setVersionData] = useState([]);
-    const [defaultProject,setDefaultProject] = useState([]);
+    const [selectedTree,setSelectedTree] = useState([]);
 
     useEffect(() => {
         axios.get('http://127.0.0.1:5000/getServiceByTree')
@@ -30,17 +30,18 @@ const NavSide = ({ setVersionSelected, setSelectedProject }) => {
             });
         axios.get('http://127.0.0.1:5000/getAllService')
             .then(response => {
-                setDefaultProject(Array.isArray(response.data) ? response.data : []);
+                setSelectedTree(Array.isArray(response.data) ? response.data : []);
                 setSelectedProject(Array.isArray(response.data) ? response.data : []);
             })
             .catch(error => {
                 console.error('Error fetching version data:', error);
-                setDefaultProject([]);
+                setSelectedTree([]);
             });
     }, []);
 
     const onTreeSelectChange = (value) => {
         // console.log('选中系统:', value);
+        setSelectedTree(value);
         setSelectedProject(value);
     };
 
@@ -53,8 +54,8 @@ const NavSide = ({ setVersionSelected, setSelectedProject }) => {
         <>
             <TreeSelect
                 showSearch
-                maxTagCount={0}
-                value={defaultProject}
+                maxTagCount={1}
+                value={selectedTree}
                 dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
                 placeholder="选择项目系统"
                 allowClear
