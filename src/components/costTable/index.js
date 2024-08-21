@@ -8,6 +8,7 @@ import {
     InputNumber,
     message,
     Modal,
+    notification,
     Popover,
     Select,
     Space,
@@ -23,7 +24,7 @@ import {MinusCircleOutlined, PlusOutlined} from "@ant-design/icons";
 const CostTable = (props) => {
     const {RangePicker} = DatePicker;
     const currentYear = dayjs().year();
-    // 默认值为当年的 1 月 1 日 到 12 月 31 日
+    const currentDay = dayjs().day()
     const defaultRange = [`${currentYear}-01`, `${currentYear}-12`];
     const [searchOption, setSearchOption] = useState('ip');
     const [searchValue, setSearchValue] = useState('');
@@ -33,6 +34,8 @@ const CostTable = (props) => {
     const [TableLoading, setTableLoading] = useState(true);
     const [paymentFilters, setPaymentFilters] = useState([]);
     const [form] = Form.useForm();
+
+    const [refresh, setRefresh] = useState(0)
 
     const renderWithEllipsis = (text) => (<Popover content={text}>
         <div style={{whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'}}>
@@ -90,32 +93,29 @@ const CostTable = (props) => {
     }, {
         title: '手机号', dataIndex: 'client_phone', key: 'client_phone', width: 130, ellipsis: true,
     }, {
-        title: '操作',
-        key: 'operation',
-        fixed: 'right',
-        width: 200,
-        render: (text, record) => (
-            <Space size="middle">
+        title: '操作', key: 'operation', fixed: 'right', width: 200, render: (text, record) => (<Space size="middle">
+            {!record.ischanged && (<>
                 <Button type="link" onClick={() => handleChange(record.key)}>变配</Button>
                 <Button type="link" onClick={() => handleCancel(record.key)}>注销</Button>
-            </Space>
-        )
+            </>)}
+        </Space>)
     },];
 
+    useEffect(() => {
+        setAddVersion(props.Version)
+    }, [props.Version]);
 
     const [isChangeModalOpen, setIsChangeModalOpen] = useState(false);
     const [confirmLoading, setConfirmLoading] = useState(false);
     const [addVersion, setAddVersion] = useState('2024');
     const [addFee, setAddFee] = useState([])
     const [visibleFields, setVisibleFields] = useState({})
+    const [selectKey, setSelectKey] = useState("")
     const second_unit = Form.useWatch('second_unit', form);
     const service = Form.useWatch('service', form);
     const usingfor = Form.useWatch('usingfor', form);
     const commit_id = Form.useWatch('commit_id', form);
-    const payment = Form.useWatch('payment', form);
     const productValue = Form.useWatch('product', form);
-    const client = Form.useWatch('client', form);
-    const client_phone = Form.useWatch('client_phone', form);
     const format = Form.useWatch('format', form);
     const system = Form.useWatch('system', form);
     const ssd = Form.useWatch('ssd', form);
@@ -126,7 +126,7 @@ const CostTable = (props) => {
     const eip = Form.useWatch('eip', form);
     const changed_time = Form.useWatch('changed_time', form);
     const addFeeValue = Form.useWatch('addFee', form);
-
+    const comment = Form.useWatch('comment', form)
     const {Option} = Select;
 
     const [formatList, setFormatList] = useState([]);
@@ -201,6 +201,7 @@ const CostTable = (props) => {
     const handleChange = async (key) => {
         setIsChangeModalOpen(true);
         message.info(`变配操作，Key: ${key}`);
+        setSelectKey(key)
 
         try {
             axios.get("http://127.0.0.1:5000/GetAddFee", {params: {addVersion}}) // 带上 version 参数
@@ -226,8 +227,7 @@ const CostTable = (props) => {
                     parsedAddFee = addFeeObject.add_fee.map(fee => {
                         const [add_product, count] = Object.entries(fee)[0];
                         return {
-                            add_product: parseInt(add_product, 10),
-                            count
+                            add_product: parseInt(add_product, 10), count
                         };
                     });
                 } catch (error) {
@@ -254,7 +254,7 @@ const CostTable = (props) => {
                 oss_storage: data.oss_storage || 0,
                 ip: data.ip || '',
                 eip: data.eip || '',
-                changed_time: data.changed_time ? dayjs(data.changed_time) : null,
+                changed_time: currentDay ? dayjs(data.changed_time) : null,
                 addFee: parsedAddFee
             });
 
@@ -262,8 +262,7 @@ const CostTable = (props) => {
             axios.get('http://127.0.0.1:5000/getFormatsByProduct', {params: {product: productBack}})
                 .then(response => {
                     const formats = response.data.map(format => ({
-                        title: format.label,
-                        value: format.value,
+                        title: format.label, value: format.value,
                     }));
                     setFormatList(formats);
                     console.log(formatList);
@@ -277,6 +276,8 @@ const CostTable = (props) => {
             message.error('获取变配数据失败');
         }
     };
+    const [modifyRequest, setModifyRequest] = useState({})
+    const [cancelRequest, setCancelRequest] = useState({})
     useEffect(() => {
         // Ensure addFeeValue is an array before calling map
         const formattedAddFee = (addFeeValue || []).map(item => {
@@ -290,46 +291,189 @@ const CostTable = (props) => {
             return {};
         });
 
-        const addrq = {
-            "service_unit": second_unit,
-            "service": service,
-            "usingfor": usingfor,
+        const formatModifyRequest = {
+            "uuid": selectKey,
             "commit_id": commit_id,
-            "payment": payment,
-            "client": client,
-            "client_phone": client_phone,
             "system": system,
             "ip": ip,
             "eip": eip,
-            "changed_time": changed_time,
+            "changed_time": dayjs(changed_time).format('YYYY-MM-DD HH:mm:ss'),
             "bill_subject": format,
             "ssd": ssd,
             "hdd": hdd,
             "rds_storage": rds_storage,
             "oss_storage": oss_storage,
+            "comment": comment,
             "addFee": formattedAddFee,
         };
-        console.log("添加请求字段:", addrq);
-    }, [second_unit, service, commit_id, usingfor, productValue, system, ip, eip, changed_time, format, ssd, hdd, rds_storage, oss_storage, addFeeValue]);
+        const formatCancelRequest = {
+            "uuid": selectKey,
+            "cancel_time": dayjs(changed_time).format('YYYY-MM-DD HH:mm:ss'),
+            "comment":comment,
+        }
+
+        setModifyRequest(formatModifyRequest)
+        setCancelRequest(formatCancelRequest)
+
+        console.log("添加变配字段:", modifyRequest);
+    }, [second_unit, service, commit_id, usingfor, productValue, system, ip, eip, changed_time, format, ssd, hdd, rds_storage, oss_storage, addFeeValue, comment]);
 
 
     const handleChangeOK = () => {
         setConfirmLoading(true)
-        //TODO 增加变配请求逻辑
+        axios.post("http://127.0.0.1:5000/ModifyCost", modifyRequest)
+            .then((response) => {
+                if (response.status === 200 || response.status === 201) {
+                    notification.success({
+                        message: '成功', description: '资源变配成功。',
+                    });
+                    form.resetFields(['city', 'unit', 'second_unit', 'service', 'commit_id', 'usingfor', 'payment', 'client', 'client_phone', 'format', 'system', 'ssd', 'hdd', 'rds_storage', 'oss_storage', 'ip', 'eip', 'start_time', 'addFee', 'comment']);
+                    setFormatList([]);
+                    setVisibleFields({}); // 取消时清空字段的可见性
+                    setIsChangeModalOpen(false);
+                    setRefresh(refresh + 1)
+                } else {
+                    notification.error({
+                        message: '失败', description: '变配失败。',
+                    });
+                }
+            })
+            .catch((error) => {
+                console.error("Error sending the request:", error);
+                notification.error({
+                    message: '错误', description: '发生了错误，请稍后再试。',
+                });
+            })
+            .finally(() => {
+                setConfirmLoading(false);
+            });
         setConfirmLoading(false)
         setIsChangeModalOpen(false)
     }
     const handleChangeCancel = () => {
         setIsChangeModalOpen(false)
-        form.resetFields(['city', 'unit', 'second_unit', 'service', 'commit_id', 'usingfor', 'payment', 'client', 'client_phone', 'format', 'system', 'ssd', 'hdd', 'rds_storage', 'oss_storage', 'ip', 'eip', 'changed_time', 'addFee']);
-        setFormatList([]);
+        form.resetFields(['city', 'unit', 'second_unit', 'service', 'commit_id', 'usingfor', 'payment', 'client', 'client_phone', 'format', 'system', 'ssd', 'hdd', 'rds_storage', 'oss_storage', 'ip', 'eip', 'changed_time', 'addFee', 'comment']);
+        setRefresh(refresh + 1)
+        // setFormatList([]);
         // setVisibleFields({});
     }
+    const handleCancelOK = () => {
+        setConfirmLoading(true)
+        axios.post("http://127.0.0.1:5000/CancelCost", cancelRequest)
+            .then((response) => {
+                if (response.status === 200 || response.status === 201) {
+                    notification.success({
+                        message: '成功', description: '资源注销成功。',
+                    });
+                    form.resetFields(['city', 'unit', 'second_unit', 'service', 'commit_id', 'usingfor', 'payment', 'client', 'client_phone', 'format', 'system', 'ssd', 'hdd', 'rds_storage', 'oss_storage', 'ip', 'eip', 'start_time', 'addFee', 'comment']);
+                    setFormatList([]);
+                    setVisibleFields({}); // 取消时清空字段的可见性
+                    setIsChangeModalOpen(false);
+                    setRefresh(refresh + 1)
+                } else {
+                    notification.error({
+                        message: '失败', description: '注销失败。',
+                    });
+                }
+            })
+            .catch((error) => {
+                console.error("Error sending the request:", error);
+                notification.error({
+                    message: '错误', description: '发生了错误，请稍后再试。',
+                });
+            })
+            .finally(() => {
+                setConfirmLoading(false);
+            });
+        setRefresh(refresh + 1)
+        setConfirmLoading(false)
+        setIsCancelModalOpen(false)
+    }
+    const handleCancelCancel = () => {
+        setIsCancelModalOpen(false)
+        setModifyRequest({})
+        form.resetFields(['city', 'unit', 'second_unit', 'service', 'commit_id', 'usingfor', 'payment', 'client', 'client_phone', 'format', 'system', 'ssd', 'hdd', 'rds_storage', 'oss_storage', 'ip', 'eip', 'changed_time', 'addFee', 'comment']);
 
 
-    const handleCancel = (key) => {
+    }
+
+    const [isCancelModalOpen, setIsCancelModalOpen] = useState(false)
+    const handleCancel = async (key) => {
+        setIsCancelModalOpen(true)
         // 处理注销按钮点击事件
         message.info(`注销操作，Key: ${key}`);
+        try {
+            axios.get("http://127.0.0.1:5000/GetAddFee", {params: {addVersion}}) // 带上 version 参数
+                .then((response) => {
+                    setAddFee(response.data);
+                })
+                .catch((error) => {
+                    console.error("Error fetching the AddFee data:", error);
+                })
+            // 请求数据
+            const response = await axios.get(`http://127.0.0.1:5000/getCostByKey`, {
+                params: {key}
+            });
+
+            // 获取返回的数据
+            const data = response.data;
+
+            // 解析 add_fee 字段
+            let parsedAddFee = [];
+            if (data.add_fee) {
+                try {
+                    const addFeeObject = JSON.parse(data.add_fee);
+                    parsedAddFee = addFeeObject.add_fee.map(fee => {
+                        const [add_product, count] = Object.entries(fee)[0];
+                        return {
+                            add_product: parseInt(add_product, 10), count
+                        };
+                    });
+                } catch (error) {
+                    console.error('解析 add_fee 数据失败:', error);
+                    message.error('解析附加费用数据失败');
+                }
+            }
+
+            // 设置表单字段的值
+            form.setFieldsValue({
+                city: data.city || '',
+                unit: data.unit || '',
+                second_unit: data.second_unit || '',
+                service: data.service || '',
+                commit_id: data.commit_id || '',
+                usingfor: data.usingfor || '',
+                product: data.resource_type || '',
+                payment: data.payment || '',
+                format: data.subject || '',
+                system: data.system || '',
+                ssd: data.ssd || 0,
+                hdd: data.hdd || 0,
+                rds_storage: data.rds_storage || 0,
+                oss_storage: data.oss_storage || 0,
+                ip: data.ip || '',
+                eip: data.eip || '',
+                changed_time: currentDay ? dayjs(data.changed_time) : null,
+                addFee: parsedAddFee
+            });
+
+            const productBack = data.resource_type;
+            axios.get('http://127.0.0.1:5000/getFormatsByProduct', {params: {product: productBack}})
+                .then(response => {
+                    const formats = response.data.map(format => ({
+                        title: format.label, value: format.value,
+                    }));
+                    setFormatList(formats);
+                    console.log(formatList);
+                })
+                .catch(error => {
+                    console.error('获取格式数据失败:', error);
+                });
+
+        } catch (error) {
+            console.error('Error fetching cost data:', error);
+            message.error('获取变配数据失败');
+        }
     };
 
     const SearchOptions = [{value: 'ip', label: 'IP地址'}, {value: '资源名', label: '资源名'},];
@@ -342,6 +486,7 @@ const CostTable = (props) => {
         }
         setSearchOption(value);
     };
+
 
     useEffect(() => {
         const PostBody = {
@@ -371,7 +516,7 @@ const CostTable = (props) => {
             fetchData().then(r => console.log(r))
         }
 
-    }, [props.Version, props.Project, costMonth, searchValue, searchOption]);
+    }, [props.Version, props.Project, costMonth, searchValue, searchOption, refresh]);
 
 
     const handleDateChange = (dates) => {
@@ -396,7 +541,7 @@ const CostTable = (props) => {
                 display: "flex", flexDirection: "row", justifyContent: "space-between", width: "100%", padding: "10px"
             }}>
                 <div>
-                    <AddResourceButton year_version={props.year_version}/>
+                    <AddResourceButton year_version={props.year_version} refresh={refresh} setRefresh={setRefresh}/>
                     <Space.Compact>
                         <Select defaultValue="ip" options={SearchOptions} onSelect={onSearchOptionSelect}/>
                         <Input placeholder={searchFor} onChange={onSearchValueChange}/>
@@ -410,7 +555,7 @@ const CostTable = (props) => {
                 </div>
             </div>
             <Modal title="变更资源计费" open={isChangeModalOpen} onOk={handleChangeOK} onCancel={handleChangeCancel}
-                   style={{minWidth: "170vh"}} confirmLoading={confirmLoading} okText="创建">
+                   style={{minWidth: "170vh"}} confirmLoading={confirmLoading} okText="变更">
                 <Form form={form} layout="horizontal" autoComplete="off"
                       style={{
                           marginLeft: "10vh",
@@ -461,11 +606,13 @@ const CostTable = (props) => {
                                     <Option key={format.value} value={format.value}>{format.title}</Option>))}
                             </Select>
                         </Form.Item>
-                        {visibleFields.system !== false && (
-                            <Form.Item name="system" label="操作系统"
-                                       rules={[{required: true, message: '请输入操作系统'}]}>
-                                <Input/>
-                            </Form.Item>)}
+                        {visibleFields.system !== false && (<Form.Item name="system" label="操作系统"
+                                                                       rules={[{
+                                                                           required: true,
+                                                                           message: '请输入操作系统'
+                                                                       }]}>
+                            <Input/>
+                        </Form.Item>)}
                         {visibleFields.ssd !== false && (<Form.Item name="ssd" label="(SSD)数据盘">
                             <InputNumber min={0} defaultValue={0} max={32768}/>
                         </Form.Item>)}
@@ -491,6 +638,13 @@ const CostTable = (props) => {
                                    }]}>
                             <DatePicker picker="date"/>
                         </Form.Item>
+                        <Form.Item name="comment" label="备注"
+                                   rules={[{
+                                       required: true, message: '请填入备注'
+                                   }]}>
+                            <Input/>
+                        </Form.Item>
+
                     </div>
                     <div style={{margin: "0.25rem", minWidth: "40vh"}}>
                         <h4 style={{color: "red"}}>如果资源类型为ECS、OSS或RDS请保留对应的默认安全费用</h4>
@@ -533,6 +687,141 @@ const CostTable = (props) => {
                                 </Form.Item>
                             </>)}
                         </Form.List>
+                    </div>
+                </Form>
+            </Modal>
+            <Modal title="变更资源计费" open={isCancelModalOpen} onOk={handleCancelOK} onCancel={handleCancelCancel}
+                   style={{minWidth: "170vh"}} confirmLoading={confirmLoading} okText="注销">
+                <Form form={form} layout="horizontal" autoComplete="off"
+                      style={{
+                          marginLeft: "10vh",
+                          marginRight: "10vh",
+                          marginTop: "5vh",
+                          marginBottom: "5vh",
+                          display: "flex",
+                          flexDirection: "row",
+                          alignItems: "center",
+                          justifyContent: "space-around"
+                      }}>
+                    <div style={{margin: "0.25rem", minWidth: "40vh"}}>
+                        <Form.Item name="city" label="市辖区" rules={[{required: true, message: '请选择市辖区'}]}>
+                            <Input disabled/>
+                        </Form.Item>
+                        <Form.Item name="unit" label="单位" rules={[{required: true, message: '请选择单位'}]}>
+                            <Input disabled/>
+                        </Form.Item>
+                        <Form.Item name="second_unit" label="二级单位"
+                                   rules={[{required: true, message: '请选择二级单位'}]}>
+                            <Input disabled/>
+                        </Form.Item>
+                        <Form.Item name="service" label="系统名"
+                                   rules={[{required: true, message: '请选择系统名'}]}>
+                            <Input disabled/>
+                        </Form.Item>
+                        <Form.Item name="commit_id" label="申请单号"
+                                   rules={[{required: true, message: '请输入申请单号'}]}>
+                            <Input disabled/>
+                        </Form.Item>
+                        <Form.Item name="usingfor" label="实例名称"
+                                   rules={[{required: true, message: '请输入实例名称'}]}>
+                            <Input disabled/>
+                        </Form.Item>
+                        <Form.Item name="product" label="资源类型"
+                                   rules={[{required: true, message: '请选择资源类型'}]}>
+                            <Input disabled/>
+                        </Form.Item>
+                        <Form.Item name="payment" label="支付单位"
+                                   rules={[{required: true, message: '请输入支付单位'}]}>
+                            <Input disabled/>
+                        </Form.Item>
+                    </div>
+                    <div style={{margin: "5vh", minWidth: "40vh"}}>
+                        <Form.Item name="format" label="规格" rules={[{required: true, message: '请选择规格'}]}>
+                            <Select placeholder="请选择规格" disabled>
+                                {formatList.map(format => (
+                                    <Option key={format.value} value={format.value}>{format.title}</Option>))}
+                            </Select>
+                        </Form.Item>
+                        {visibleFields.system !== false && (<Form.Item name="system" label="操作系统"
+                                                                       rules={[{
+                                                                           required: true,
+                                                                           message: '请输入操作系统'
+                                                                       }]}>
+                            <Input disabled/>
+                        </Form.Item>)}
+                        {visibleFields.ssd !== false && (<Form.Item name="ssd" label="(SSD)数据盘">
+                            <InputNumber disabled min={0} defaultValue={0} max={32768}/>
+                        </Form.Item>)}
+                        {visibleFields.hdd !== false && (<Form.Item name="hdd" label="高效云盘数据盘">
+                            <InputNumber disabled min={0} defaultValue={0} max={32768}/>GB
+                        </Form.Item>)}
+                        {visibleFields.rds_storage !== false && (<Form.Item name="rds_storage" label="云数据库存储">
+                            <InputNumber disabled min={0} defaultValue={0} max={32768}/>GB
+                        </Form.Item>)}
+                        {visibleFields.oss_storage !== false && (<Form.Item name="oss_storage" label="对象存储存储">
+                            <InputNumber disabled min={0} defaultValue={0} max={32768}/>GB
+                        </Form.Item>)}
+                        {visibleFields.ip !== false && (
+                            <Form.Item name="ip" label="IP地址" rules={[{required: true, message: '请输入IP地址'}]}>
+                                <Input disabled/>
+                            </Form.Item>)}
+                        {visibleFields.eip !== false && (<Form.Item name="eip" label="弹性IP地址">
+                            <Input disabled/>
+                        </Form.Item>)}
+                        <Form.Item name="changed_time" label="注销日期"
+                                   rules={[{
+                                       required: true, message: '请选择注销日期'
+                                   }]}>
+                            <DatePicker picker="date"/>
+                        </Form.Item>
+                    </div>
+                    <div style={{margin: "0.25rem", minWidth: "40vh"}}>
+                        <h4 style={{color: "red"}}>如果资源类型为ECS、OSS或RDS请保留对应的默认安全费用</h4>
+                        <Form.List name="addFee">
+                            {(fields, {add, remove}) => (<>
+                                <div style={{
+                                    maxHeight: '300px', overflowY: 'auto', marginBottom: '16px'
+                                }}> {/* 添加这个div容器 */}
+                                    {fields.map(({key, name, ...restField}) => (<Space key={key} style={{
+                                        display: 'flex',
+                                        marginBottom: 8,
+                                        justifyContent: "space-between",
+                                        width: "100%",
+                                        alignItems: "center"
+                                    }} align="center">
+
+                                        <Form.Item
+                                            {...restField}
+                                            name={[name, 'add_product']}
+                                            rules={[{required: true, message: '缺少额外计费选项'}]}
+                                            style={{flex: 1, marginBottom: 0}}
+                                        >
+                                            <Select options={addFee} disabled style={{minWidth: "150px"}}/>
+                                        </Form.Item>
+                                        <Form.Item
+                                            {...restField}
+                                            name={[name, 'count']}
+                                            rules={[{required: true, message: '缺少计数'}]}
+                                            style={{flex: 1, marginBottom: 0}}
+                                        >
+                                            <InputNumber disabled style={{width: "100%"}}/>
+                                        </Form.Item>
+                                        <MinusCircleOutlined onClick={() => remove(name)}/>
+                                    </Space>))}
+                                </div>
+                                <Form.Item>
+                                    <Button type="dashed" disabled onClick={() => add()} block icon={<PlusOutlined/>}>
+                                        增加额外计费
+                                    </Button>
+                                </Form.Item>
+                            </>)}
+                        </Form.List>
+                        <Form.Item name="comment" label="备注"
+                                   rules={[{
+                                       required: true, message: '请填入备注'
+                                   }]}>
+                            <Input/>
+                        </Form.Item>
                     </div>
                 </Form>
             </Modal>

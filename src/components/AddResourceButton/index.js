@@ -246,6 +246,7 @@ const AddButton = (props) => {
                     setFormatList([]);
                     setVisibleFields({}); // 取消时清空字段的可见性
                     setIsModalOpen(false);
+                    props.setRefresh(props.refresh+1)
                 } else {
                     notification.error({
                         message: '失败',
