@@ -11,7 +11,7 @@ import {
     notification,
     Popover,
     Select,
-    Space,
+    Space, Spin,
     Table
 } from "antd";
 import axios from "axios";
@@ -487,7 +487,6 @@ const CostTable = (props) => {
         setSearchOption(value);
     };
 
-
     useEffect(() => {
         const PostBody = {
             cost_month: costMonth,
@@ -825,17 +824,27 @@ const CostTable = (props) => {
                     </div>
                 </Form>
             </Modal>
-            <Table
-                columns={TableColumn}
-                dataSource={tableData}
-                scroll={{
-                    x: 1500, y: "72.5vh"
-                }}
-                loading={TableLoading}
-                sticky={{
-                    offsetHeader: 64,
-                }}
-            />
+            {/*<Table*/}
+            {/*    columns={TableColumn}*/}
+            {/*    dataSource={tableData}*/}
+            {/*    scroll={{*/}
+            {/*        x: 1500, y: "72.5vh"*/}
+            {/*    }}*/}
+            {/*    loading={TableLoading}*/}
+            {/*    sticky={{*/}
+            {/*        offsetHeader: 64,*/}
+            {/*    }}*/}
+            {/*/>*/}
+            {TableLoading ? (
+                <Spin size="large" style={{ marginTop: 250 }} />
+            ) : (
+                <Table
+                    columns={TableColumn}
+                    dataSource={tableData}
+                    scroll={{ x: 1500, y: "72.5vh" }}
+                    sticky={{ offsetHeader: 64 }}
+                />
+            )}
         </div>
     </>);
 };
