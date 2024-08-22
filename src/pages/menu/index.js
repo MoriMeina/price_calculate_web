@@ -5,6 +5,7 @@ import CostTable from "../../components/costTable";
 import CityTable from "../../components/cityTable";
 import PriceTable from "../../components/priceTable";
 import AddFeeTable from "../../components/addFeeTable";
+import ServiceTable from "../../components/serviceTable";
 
 const {Header, Content, Sider} = Layout;
 
@@ -86,7 +87,7 @@ const BillingSummary = ({ versionSelected, selectedProject }) => {
 
 const DistrictEdit = () => <CityTable/>;
 const BillingPrice = () => <PriceTable/>;
-const OwnershipApp = () => <div>归属应用内容</div>;
+const OwnershipApp = () => <ServiceTable/>;
 const ExtraCost = () => <AddFeeTable/>;
 
 const LeftSide = ({onMenuSelect}) => {

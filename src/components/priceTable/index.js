@@ -256,14 +256,14 @@ const PriceTable = () => {
                     label="价格"
                     rules={[{ required: true, message: '请输入价格!' }]}
                 >
-                    <InputNumber placeholder="价格" />
+                    <InputNumber placeholder="价格" min={0} />
                 </Form.Item>
                 <Form.Item
                     name="price_with_elect"
                     label="含电价"
                     rules={[{ required: true, message: '请输入含电价!' }]}
                 >
-                    <InputNumber placeholder="含电价" />
+                    <InputNumber placeholder="含电价" min={0}/>
                 </Form.Item>
                 <Form.Item
                     name="version"
