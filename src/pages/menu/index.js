@@ -3,6 +3,8 @@ import {Layout, Menu, Select, TreeSelect} from 'antd';
 import axios from 'axios';
 import CostTable from "../../components/costTable";
 import CityTable from "../../components/cityTable";
+import PriceTable from "../../components/priceTable";
+import AddFeeTable from "../../components/addFeeTable";
 
 const {Header, Content, Sider} = Layout;
 
@@ -83,9 +85,9 @@ const BillingSummary = ({ versionSelected, selectedProject }) => {
 };
 
 const DistrictEdit = () => <CityTable/>;
-const BillingPrice = () => <div>计费价格内容</div>;
+const BillingPrice = () => <PriceTable/>;
 const OwnershipApp = () => <div>归属应用内容</div>;
-const ExtraCost = () => <div>额外费用内容</div>;
+const ExtraCost = () => <AddFeeTable/>;
 
 const LeftSide = ({onMenuSelect}) => {
     const menuItems = [
@@ -118,7 +120,7 @@ const MenuComponent = () => {
             case 'billingSummary':
                 return <BillingSummary versionSelected={versionSelected} selectedProject={selectedProject} />;
             case 'districtEdit':
-                return <DistrictEdit />;
+                return <DistrictEdit/>;
             case 'billingPrice':
                 return <BillingPrice />;
             case 'ownershipApp':
