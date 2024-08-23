@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 import {Layout, Menu, Select, TreeSelect} from 'antd';
 import axios from 'axios';
 import CostTable from "../../components/costTable";
@@ -6,13 +6,14 @@ import CityTable from "../../components/cityTable";
 import PriceTable from "../../components/priceTable";
 import AddFeeTable from "../../components/addFeeTable";
 import ServiceTable from "../../components/serviceTable";
+import Charts from "../../components/charts";
 
 const {Header, Content, Sider} = Layout;
 
-const NavSide = ({ setVersionSelected, setSelectedProject }) => {
+const NavSide = ({setVersionSelected, setSelectedProject}) => {
     const [treeData, setTreeData] = useState([]);
     const [versionData, setVersionData] = useState([]);
-    const [selectedTree,setSelectedTree] = useState([]);
+    const [selectedTree, setSelectedTree] = useState([]);
 
     useEffect(() => {
         axios.get('http://127.0.0.1:5000/getServiceByTree')
@@ -60,18 +61,18 @@ const NavSide = ({ setVersionSelected, setSelectedProject }) => {
                 showSearch
                 maxTagCount={1}
                 value={selectedTree}
-                dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
+                dropdownStyle={{maxHeight: 400, overflow: 'auto'}}
                 placeholder="选择项目系统"
                 allowClear
                 treeCheckable={true}
                 // treeDefaultExpandAll
                 onChange={onTreeSelectChange}
                 treeData={treeData}
-                style={{ width: 300 }}
+                style={{width: 300}}
             />
             <Select
                 defaultValue="2024"
-                style={{ width: 120 }}
+                style={{width: 120}}
                 onChange={onVersionChange}
                 options={versionData}
             />
@@ -79,12 +80,13 @@ const NavSide = ({ setVersionSelected, setSelectedProject }) => {
     );
 };
 
-const BillingSummary = ({ versionSelected, selectedProject }) => {
-    console.log("向子组件传参(计费版本选择):",versionSelected)
-    console.log("向子组件传参(项目选择):",selectedProject)
+const BillingSummary = ({versionSelected, selectedProject}) => {
+    console.log("向子组件传参(计费版本选择):", versionSelected)
+    console.log("向子组件传参(项目选择):", selectedProject)
     return <CostTable Version={versionSelected} Project={selectedProject}/>;
 };
 
+const MainTabComponent =()=><Charts/>
 const DistrictEdit = () => <CityTable/>;
 const BillingPrice = () => <PriceTable/>;
 const OwnershipApp = () => <ServiceTable/>;
@@ -92,6 +94,7 @@ const ExtraCost = () => <AddFeeTable/>;
 
 const LeftSide = ({onMenuSelect}) => {
     const menuItems = [
+        {label: '主页', key: 'mainTab'},
         {label: '计费总表', key: 'billingSummary'},
         {label: '区县编辑', key: 'districtEdit'},
         {label: '计费价格', key: 'billingPrice'},
@@ -102,7 +105,7 @@ const LeftSide = ({onMenuSelect}) => {
     return (
         <Menu
             mode="inline"
-            defaultSelectedKeys={['billingSummary']}
+            defaultSelectedKeys={['mainTab']}
             style={{height: '100%', borderRight: 0}}
             theme="light"
             items={menuItems}
@@ -112,22 +115,24 @@ const LeftSide = ({onMenuSelect}) => {
 };
 
 const MenuComponent = () => {
-    const [selectedMenuKey, setSelectedMenuKey] = useState('billingSummary');
+    const [selectedMenuKey, setSelectedMenuKey] = useState('mainTab');
     const [versionSelected, setVersionSelected] = useState('2024');
     const [selectedProject, setSelectedProject] = useState([]);
 
     const renderContent = () => {
         switch (selectedMenuKey) {
+            case 'mainTab':
+                return <MainTabComponent/>;
             case 'billingSummary':
-                return <BillingSummary versionSelected={versionSelected} selectedProject={selectedProject} />;
+                return <BillingSummary versionSelected={versionSelected} selectedProject={selectedProject}/>;
             case 'districtEdit':
                 return <DistrictEdit/>;
             case 'billingPrice':
-                return <BillingPrice />;
+                return <BillingPrice/>;
             case 'ownershipApp':
-                return <OwnershipApp />;
+                return <OwnershipApp/>;
             case 'extraCost':
-                return <ExtraCost />;
+                return <ExtraCost/>;
             default:
                 return null;
         }
@@ -160,7 +165,7 @@ const MenuComponent = () => {
                 <Layout>
                     <Content
                         style={{
-                            minWidth: "1000px",
+                            minWidth: "1600px",
                             padding: 5,
                             margin: 0,
                             minHeight: 280,

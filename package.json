@@ -3,7 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@ant-design/charts": "^2.1.2",
     "@ant-design/icons": "^5.0.1",
+    "@ant-design/plots": "^2.2.8",
     "@fortawesome/free-solid-svg-icons": "^6.4.0",
     "@fortawesome/react-fontawesome": "^0.2.0",
     "@testing-library/jest-dom": "^5.16.5",
@@ -13,6 +15,7 @@
     "axios": "^1.4.0",
     "dayjs": "^1.11.12",
     "exceljs": "^4.4.0",
+    "mark": "^0.10.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.11.1",
