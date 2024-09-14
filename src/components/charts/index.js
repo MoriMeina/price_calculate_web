@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {Column, Pie, Radar, RadialBar, Rose, Sunburst} from '@ant-design/plots';
+import {Column, Pie, Radar, RadialBar, Rose} from '@ant-design/plots';
 import axios from 'axios';
 
 const ChartsComponent = () => {
@@ -12,7 +12,7 @@ const ChartsComponent = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const [roseResponse, columnResponse, pieResponse, radarResponse, RadialBarResponse] = await Promise.all([axios.get('http://127.0.0.1:5000/stats/city'), axios.get('http://127.0.0.1:5000/stats/unit'), axios.get('http://127.0.0.1:5000/stats/service'), axios.get('http://127.0.0.1:5000/stats/bill_subject'), axios.get('http://127.0.0.1:5000/stats/system')]);
+                const [roseResponse, columnResponse, pieResponse, radarResponse, RadialBarResponse] = await Promise.all([axios.get('/yd_zwy/api/stats/city'), axios.get('/yd_zwy/api/stats/unit'), axios.get('/yd_zwy/api/stats/service'), axios.get('/yd_zwy/api/stats/bill_subject'), axios.get('/yd_zwy/api/stats/system')]);
 
                 // console.log('Rose Data:', roseResponse.data);
                 // console.log('Column Data:', columnResponse.data);

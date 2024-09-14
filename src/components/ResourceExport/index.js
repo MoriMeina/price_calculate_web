@@ -24,7 +24,7 @@ const ExportButton = () => {
                 year_version: values.version,
             };
 
-            axios.post('http://127.0.0.1:5000/DescribeCost', requestData)
+            axios.post('/yd_zwy/api/DescribeCost', requestData)
                 .then(response => {
                     const data = response.data;
 
@@ -105,7 +105,7 @@ const ExportButton = () => {
     };
 
     useEffect(() => {
-        axios.get('http://127.0.0.1:5000/getServiceByTree')
+        axios.get('/yd_zwy/api/getServiceByTree')
             .then(response => {
                 setTreeData(Array.isArray(response.data) ? response.data : []);
             })
@@ -114,7 +114,7 @@ const ExportButton = () => {
                 setTreeData([]);
             });
 
-        axios.get('http://127.0.0.1:5000/GetYearVersion')
+        axios.get('/yd_zwy/api/GetYearVersion')
             .then(response => {
                 setVersionData(Array.isArray(response.data) ? response.data : []);
             })

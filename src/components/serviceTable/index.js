@@ -42,7 +42,7 @@ const ServiceTable = () => {
 
     useEffect(() => {
         // Fetch tree data from backend
-        axios.get('http://127.0.0.1:5000/getServiceByTree')
+        axios.get('/yd_zwy/api/getServiceByTree')
             .then(response => {
                 const treeData = response.data;
                 setOptions(treeData);
@@ -100,7 +100,7 @@ const ServiceTable = () => {
             const newEntry = await addForm.validateFields();
 
             // 调用后端添加接口
-            axios.post('http://127.0.0.1:5000/addService', newEntry)
+            axios.post('/yd_zwy/api/addService', newEntry)
                 .then(() => {
                     fetchData();  // 重新获取数据
                     addForm.resetFields(); // 清空表单
@@ -123,7 +123,7 @@ const ServiceTable = () => {
     };
 
     const fetchData = () => {
-        axios.get('http://127.0.0.1:5000/getService')
+        axios.get('/yd_zwy/api/getService')
             .then(response => {
                 setData(response.data);
             })
@@ -158,7 +158,7 @@ const ServiceTable = () => {
                 setEditingKey('');
 
                 // 调用后端更新接口
-                axios.put(`http://127.0.0.1:5000/updateService/${uuid}`, row)
+                axios.put(`/yd_zwy/api/updateService/${uuid}`, row)
                     .then(() => {
                         message.success('更新成功');
                     })
@@ -177,7 +177,7 @@ const ServiceTable = () => {
     };
 
     const handleDelete = (uuid) => {
-        axios.delete(`http://127.0.0.1:5000/deleteService/${uuid}`)
+        axios.delete(`/yd_zwy/api/deleteService/${uuid}`)
             .then(() => {
                 setData(data.filter(item => item.uuid !== uuid));
                 message.success('删除成功');
@@ -263,8 +263,10 @@ const ServiceTable = () => {
             style={{minWidth: "100vh"}}
         >
             <Form form={addForm} layout="horizontal" onFinish={handleAdd}>
-                <div style={{display: "flex", flexDirection: "row",marginTop:"35px",marginLeft:"20px",marginRight:"20px"}}>
-                    <div style={{width: "50%",marginRight:"5px"}}>
+                <div style={{
+                    display: "flex", flexDirection: "row", marginTop: "35px", marginLeft: "20px", marginRight: "20px"
+                }}>
+                    <div style={{width: "50%", marginRight: "5px"}}>
                         <Form.Item name="city" label="区县" rules={[{required: true, message: '请输入区县'}]}>
                             <AutoComplete
                                 options={cityOptions}
@@ -284,7 +286,8 @@ const ServiceTable = () => {
                             />
                         </Form.Item>
 
-                        <Form.Item name="second_unit" label="二级单位" rules={[{required: true, message: '请输入二级单位'}]}>
+                        <Form.Item name="second_unit" label="二级单位"
+                                   rules={[{required: true, message: '请输入二级单位'}]}>
                             <AutoComplete
                                 options={secondUnitOptions}
                                 placeholder="二级单位"
@@ -293,7 +296,7 @@ const ServiceTable = () => {
                             />
                         </Form.Item>
                     </div>
-                    <div style={{width: "50%",marginLeft:"5px"}}>
+                    <div style={{width: "50%", marginLeft: "5px"}}>
                         <Form.Item name="service" label="服务(对应IRS系统)"
                                    rules={[{required: true, message: '请输入服务'}]}>
                             <Input placeholder="服务"/>

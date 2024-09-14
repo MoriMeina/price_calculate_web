@@ -11,7 +11,8 @@ import {
     notification,
     Popover,
     Select,
-    Space, Spin,
+    Space,
+    Spin,
     Table
 } from "antd";
 import axios from "axios";
@@ -78,7 +79,9 @@ const CostTable = (props) => {
         title: '弹性IP地址', dataIndex: 'eip', key: 'eip', width: 150
     }, {
         title: '系统', dataIndex: 'system', key: 'system', width: 150, ellipsis: true, render: renderWithEllipsis
-    }, {title: '规格', dataIndex: 'subject', key: 'subject', width: 110}, {
+    }, {
+        title: '规格', dataIndex: 'subject', key: 'subject', width: 120, ellipsis: true, render: renderWithEllipsis
+    }, {
         title: '存储', dataIndex: 'storage', key: 'storage', width: 175, ellipsis: true, render: renderWithEllipsis
     }, {
         title: '额外计费', dataIndex: 'add_fee', key: 'add_fee', width: 175, ellipsis: true, render: renderWithEllipsis
@@ -94,7 +97,7 @@ const CostTable = (props) => {
         title: '手机号', dataIndex: 'client_phone', key: 'client_phone', width: 130, ellipsis: true,
     }, {
         title: '操作', key: 'operation', fixed: 'right', width: 200, render: (text, record) => (<Space size="middle">
-            {!record.ischanged && (<>
+            {!(record.ischanged === true || record.ischanged === false) && (<>
                 <Button type="link" onClick={() => handleChange(record.key)}>变配</Button>
                 <Button type="link" onClick={() => handleCancel(record.key)}>注销</Button>
             </>)}
@@ -204,7 +207,7 @@ const CostTable = (props) => {
         setSelectKey(key)
 
         try {
-            axios.get("http://127.0.0.1:5000/GetAddFee", {params: {addVersion}}) // 带上 version 参数
+            axios.get("/yd_zwy/api/GetAddFee", {params: {addVersion}}) // 带上 version 参数
                 .then((response) => {
                     setAddFee(response.data);
                 })
@@ -212,7 +215,7 @@ const CostTable = (props) => {
                     console.error("Error fetching the AddFee data:", error);
                 })
             // 请求数据
-            const response = await axios.get(`http://127.0.0.1:5000/getCostByKey`, {
+            const response = await axios.get(`/yd_zwy/api/getCostByKey`, {
                 params: {key}
             });
 
@@ -259,7 +262,7 @@ const CostTable = (props) => {
             });
 
             const productBack = data.resource_type;
-            axios.get('http://127.0.0.1:5000/getFormatsByProduct', {params: {product: productBack}})
+            axios.get('/yd_zwy/api/getFormatsByProduct', {params: {product: productBack}})
                 .then(response => {
                     const formats = response.data.map(format => ({
                         title: format.label, value: format.value,
@@ -307,9 +310,7 @@ const CostTable = (props) => {
             "addFee": formattedAddFee,
         };
         const formatCancelRequest = {
-            "uuid": selectKey,
-            "cancel_time": dayjs(changed_time).format('YYYY-MM-DD HH:mm:ss'),
-            "comment":comment,
+            "uuid": selectKey, "cancel_time": dayjs(changed_time).format('YYYY-MM-DD HH:mm:ss'), "comment": comment,
         }
 
         setModifyRequest(formatModifyRequest)
@@ -321,7 +322,7 @@ const CostTable = (props) => {
 
     const handleChangeOK = () => {
         setConfirmLoading(true)
-        axios.post("http://127.0.0.1:5000/ModifyCost", modifyRequest)
+        axios.post("/yd_zwy/api/ModifyCost", modifyRequest)
             .then((response) => {
                 if (response.status === 200 || response.status === 201) {
                     notification.success({
@@ -359,7 +360,7 @@ const CostTable = (props) => {
     }
     const handleCancelOK = () => {
         setConfirmLoading(true)
-        axios.post("http://127.0.0.1:5000/CancelCost", cancelRequest)
+        axios.post("/yd_zwy/api/CancelCost", cancelRequest)
             .then((response) => {
                 if (response.status === 200 || response.status === 201) {
                     notification.success({
@@ -403,7 +404,7 @@ const CostTable = (props) => {
         // 处理注销按钮点击事件
         message.info(`注销操作，Key: ${key}`);
         try {
-            axios.get("http://127.0.0.1:5000/GetAddFee", {params: {addVersion}}) // 带上 version 参数
+            axios.get("/yd_zwy/api/GetAddFee", {params: {addVersion}}) // 带上 version 参数
                 .then((response) => {
                     setAddFee(response.data);
                 })
@@ -411,7 +412,7 @@ const CostTable = (props) => {
                     console.error("Error fetching the AddFee data:", error);
                 })
             // 请求数据
-            const response = await axios.get(`http://127.0.0.1:5000/getCostByKey`, {
+            const response = await axios.get(`/yd_zwy/api/getCostByKey`, {
                 params: {key}
             });
 
@@ -458,7 +459,7 @@ const CostTable = (props) => {
             });
 
             const productBack = data.resource_type;
-            axios.get('http://127.0.0.1:5000/getFormatsByProduct', {params: {product: productBack}})
+            axios.get('/yd_zwy/api/getFormatsByProduct', {params: {product: productBack}})
                 .then(response => {
                     const formats = response.data.map(format => ({
                         title: format.label, value: format.value,
@@ -499,7 +500,7 @@ const CostTable = (props) => {
         const fetchData = async () => {
             setTableLoading(true);
             try {
-                const response = await axios.post('http://127.0.0.1:5000/DescribeCost', PostBody);
+                const response = await axios.post('/yd_zwy/api/DescribeCost', PostBody);
                 const uniquePayments = [...new Set(response.data.map(({payment}) => payment))];
                 const filters = uniquePayments.map(payment => ({text: payment, value: payment}));
                 setPaymentFilters(filters);
@@ -607,8 +608,7 @@ const CostTable = (props) => {
                         </Form.Item>
                         {visibleFields.system !== false && (<Form.Item name="system" label="操作系统"
                                                                        rules={[{
-                                                                           required: true,
-                                                                           message: '请输入操作系统'
+                                                                           required: true, message: '请输入操作系统'
                                                                        }]}>
                             <Input/>
                         </Form.Item>)}
@@ -743,8 +743,7 @@ const CostTable = (props) => {
                         </Form.Item>
                         {visibleFields.system !== false && (<Form.Item name="system" label="操作系统"
                                                                        rules={[{
-                                                                           required: true,
-                                                                           message: '请输入操作系统'
+                                                                           required: true, message: '请输入操作系统'
                                                                        }]}>
                             <Input disabled/>
                         </Form.Item>)}
@@ -835,16 +834,12 @@ const CostTable = (props) => {
             {/*        offsetHeader: 64,*/}
             {/*    }}*/}
             {/*/>*/}
-            {TableLoading ? (
-                <Spin size="large" style={{ marginTop: 250 }} />
-            ) : (
-                <Table
-                    columns={TableColumn}
-                    dataSource={tableData}
-                    scroll={{ x: 1500, y: "72.5vh" }}
-                    sticky={{ offsetHeader: 64 }}
-                />
-            )}
+            {TableLoading ? (<Spin size="large" style={{marginTop: 250}}/>) : (<Table
+                columns={TableColumn}
+                dataSource={tableData}
+                scroll={{x: 1500, y: "72.5vh"}}
+                sticky={{offsetHeader: 64}}
+            />)}
         </div>
     </>);
 };

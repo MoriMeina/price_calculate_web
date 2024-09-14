@@ -40,6 +40,8 @@ const AddButton = (props) => {
     const start_time = Form.useWatch('start_time', form);
     const addFeeValue = Form.useWatch('addFee', form);
 
+    const [priceNow, setPriceNow] = useState(0);
+
 
     const {version} = props;
     const resourceType = [{
@@ -54,11 +56,13 @@ const AddButton = (props) => {
         label: <span>网络服务</span>, title: 'network', options: [{label: <span>SLB负载均衡</span>, value: 'SLB'},],
     },];
 
-    useEffect(() => {setAddVersion(props.version)},[props.version])
+    useEffect(() => {
+        setAddVersion(props.version)
+    }, [props.version])
     useEffect(() => {
         form.setFieldsValue({product: 'ECS'});
         // Fetch the tree data
-        axios.get("http://127.0.0.1:5000/getServiceByTree")
+        axios.get("/yd_zwy/api/getServiceByTree")
             .then((response) => {
                 setCityList(response.data);
             })
@@ -66,7 +70,7 @@ const AddButton = (props) => {
                 console.error("Error fetching the tree data:", error);
             });
         console.log("version", version);
-        axios.get("http://127.0.0.1:5000/GetAddFee", {params: {addVersion}}) // 带上 version 参数
+        axios.get("/yd_zwy/api/GetAddFee", {params: {addVersion}}) // 带上 version 参数
             .then((response) => {
                 setAddFee(response.data);
             })
@@ -108,7 +112,7 @@ const AddButton = (props) => {
     };
     useEffect(() => {
         // Fetch format list based on product value
-        axios.get("http://127.0.0.1:5000/getFormatsByProduct", {params: {product: productValue}})
+        axios.get("/yd_zwy/api/getFormatsByProduct", {params: {product: productValue}})
             .then((response) => {
                 setFormatList(response.data); // Update format list
                 form.resetFields(['format']); // Reset format selection
@@ -220,6 +224,14 @@ const AddButton = (props) => {
         };
         console.log("添加请求字段:", addrq);
         setAddRequest(addrq);
+        axios.post("/yd_zwy/api/Calculate", addrq)
+            .then((response) => {
+                setPriceNow(response.data.monthly_price);
+                console.log("当前价格:", response.data);
+            })
+            .catch((error) => {
+                console.error("Error fetching format data:", error);
+            });
     }, [second_unit, service, commit_id, usingfor, productValue, system, ip, eip, start_time, format, ssd, hdd, rds_storage, oss_storage, addFeeValue]);
 
 
@@ -232,12 +244,11 @@ const AddButton = (props) => {
     const handleCreate = () => {
         setConfirmLoading(true);
 
-        axios.post("http://127.0.0.1:5000/CreateCost", addRequest)
+        axios.post("/yd_zwy/api/CreateCost", addRequest)
             .then((response) => {
                 if (response.status === 200 || response.status === 201) {
                     notification.success({
-                        message: '成功',
-                        description: '资源创建成功。',
+                        message: '成功', description: '资源创建成功。',
                     });
                     form.resetFields(['city', 'unit', 'second_unit', 'service', 'commit_id', 'usingfor', 'payment', 'client', 'client_phone', 'format', 'system', 'ssd', 'hdd', 'rds_storage', 'oss_storage', 'ip', 'eip', 'start_time', 'addFee']);
                     setUnitList([]);
@@ -246,19 +257,17 @@ const AddButton = (props) => {
                     setFormatList([]);
                     setVisibleFields({}); // 取消时清空字段的可见性
                     setIsModalOpen(false);
-                    props.setRefresh(props.refresh+1)
+                    props.setRefresh(props.refresh + 1)
                 } else {
                     notification.error({
-                        message: '失败',
-                        description: '资源创建失败。',
+                        message: '失败', description: '资源创建失败。',
                     });
                 }
             })
             .catch((error) => {
                 console.error("Error sending the request:", error);
                 notification.error({
-                    message: '错误',
-                    description: '发生了错误，请稍后再试。',
+                    message: '错误', description: '发生了错误，请稍后再试。',
                 });
             })
             .finally(() => {
@@ -279,7 +288,19 @@ const AddButton = (props) => {
     return (<>
         <Button type="primary" onClick={showModal} style={{margin: "0.25rem"}}>添加</Button>
         <Modal title="创建资源计费" open={isModalOpen} onOk={handleCreate} onCancel={handleCancel}
-               style={{minWidth: "170vh"}} confirmLoading={confirmLoading} okText="创建">
+               style={{minWidth: "170vh"}} confirmLoading={confirmLoading}
+               footer={<div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                   <div style={{fontSize:"20px"}}>
+                       <strong>预算价格: </strong>
+                       <span style={{color:"orange"}}>¥{priceNow.toFixed(2)}</span>
+                   </div>
+                   <Space>
+                       <Button key="cancel" onClick={handleCancel}>取消</Button>
+                       <Button key="submit" type="primary" loading={confirmLoading} onClick={handleCreate}>
+                           添加
+                       </Button>
+                   </Space>
+               </div>}>
             <Form form={form} layout="horizontal" autoComplete="off"
                   style={{
                       marginLeft: "10vh",
@@ -359,8 +380,11 @@ const AddButton = (props) => {
                         <InputNumber min={0} defaultValue={0} max={32768}/>
                     </Form.Item>)}
                     {visibleFields.hdd !== false && (<Form.Item name="hdd" label="高效云盘数据盘">
-                        <InputNumber min={0} defaultValue={0} max={32768}/>GB
+                        <InputNumber min={0} defaultValue={0} max={32768}/>
                     </Form.Item>)}
+                    {/*{visibleFields.hdd !== false && (<Form.Item name="hdd" label="高效云盘数据盘">*/}
+                    {/*    <InputNumber min={0} defaultValue={0} max={32768}/>GB*/}
+                    {/*</Form.Item>)}*/}
                     {visibleFields.rds_storage !== false && (<Form.Item name="rds_storage" label="云数据库存储">
                         <InputNumber min={0} defaultValue={0} max={32768}/>GB
                     </Form.Item>)}

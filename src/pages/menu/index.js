@@ -16,7 +16,7 @@ const NavSide = ({setVersionSelected, setSelectedProject}) => {
     const [selectedTree, setSelectedTree] = useState([]);
 
     useEffect(() => {
-        axios.get('http://127.0.0.1:5000/getServiceByTree')
+        axios.get('/yd_zwy/api/getServiceByTree')
             .then(response => {
                 setTreeData(Array.isArray(response.data) ? response.data : []);
             })
@@ -25,7 +25,7 @@ const NavSide = ({setVersionSelected, setSelectedProject}) => {
                 setTreeData([]);
             });
 
-        axios.get('http://127.0.0.1:5000/GetYearVersion')
+        axios.get('/yd_zwy/api/GetYearVersion')
             .then(response => {
                 setVersionData(Array.isArray(response.data) ? response.data : []);
             })
@@ -33,7 +33,7 @@ const NavSide = ({setVersionSelected, setSelectedProject}) => {
                 console.error('Error fetching version data:', error);
                 setVersionData([]);
             });
-        axios.get('http://127.0.0.1:5000/getAllService')
+        axios.get('/yd_zwy/api/getAllService')
             .then(response => {
                 setSelectedTree(Array.isArray(response.data) ? response.data : []);
                 setSelectedProject(Array.isArray(response.data) ? response.data : []);
@@ -55,8 +55,7 @@ const NavSide = ({setVersionSelected, setSelectedProject}) => {
         // console.log('选择计费版本:', value);
     };
 
-    return (
-        <>
+    return (<>
             <TreeSelect
                 showSearch
                 maxTagCount={1}
@@ -76,8 +75,7 @@ const NavSide = ({setVersionSelected, setSelectedProject}) => {
                 onChange={onVersionChange}
                 options={versionData}
             />
-        </>
-    );
+        </>);
 };
 
 const BillingSummary = ({versionSelected, selectedProject}) => {
@@ -86,32 +84,29 @@ const BillingSummary = ({versionSelected, selectedProject}) => {
     return <CostTable Version={versionSelected} Project={selectedProject}/>;
 };
 
-const MainTabComponent =()=><Charts/>
+const MainTabComponent = () => <Charts/>
 const DistrictEdit = () => <CityTable/>;
 const BillingPrice = () => <PriceTable/>;
 const OwnershipApp = () => <ServiceTable/>;
 const ExtraCost = () => <AddFeeTable/>;
 
 const LeftSide = ({onMenuSelect}) => {
-    const menuItems = [
-        {label: '主页', key: 'mainTab'},
-        {label: '计费总表', key: 'billingSummary'},
-        {label: '区县编辑', key: 'districtEdit'},
-        {label: '计费价格', key: 'billingPrice'},
-        {label: '归属应用', key: 'ownershipApp'},
-        {label: '额外费用', key: 'extraCost'},
-    ];
+    const menuItems = [{label: '主页', key: 'mainTab'}, {label: '计费总表', key: 'billingSummary'}, {
+        label: '区县编辑',
+        key: 'districtEdit'
+    }, {label: '计费价格', key: 'billingPrice'}, {label: '归属应用', key: 'ownershipApp'}, {
+        label: '额外费用',
+        key: 'extraCost'
+    },];
 
-    return (
-        <Menu
+    return (<Menu
             mode="inline"
             defaultSelectedKeys={['mainTab']}
             style={{height: '100%', borderRight: 0}}
             theme="light"
             items={menuItems}
             onClick={(e) => onMenuSelect(e.key)}
-        />
-    );
+        />);
 };
 
 const MenuComponent = () => {
@@ -138,8 +133,7 @@ const MenuComponent = () => {
         }
     };
 
-    return (
-        <Layout>
+    return (<Layout>
             <Header
                 style={{
                     display: 'flex', alignItems: 'center', justifyContent: 'space-between'
@@ -154,10 +148,7 @@ const MenuComponent = () => {
                 <Sider
                     width={200}
                     style={{
-                        minHeight: "700px",
-                        height: '92.5vh',
-                        background: '#fff',
-                        borderRight: '1px solid #f0f0f0',
+                        minHeight: "700px", height: '92.5vh', background: '#fff', borderRight: '1px solid #f0f0f0',
                     }}
                 >
                     <LeftSide onMenuSelect={setSelectedMenuKey}/>
@@ -165,19 +156,14 @@ const MenuComponent = () => {
                 <Layout>
                     <Content
                         style={{
-                            minWidth: "1600px",
-                            padding: 5,
-                            margin: 0,
-                            minHeight: 280,
-                            background: '#fff',
+                            minWidth: "1600px", padding: 5, margin: 0, minHeight: 280, background: '#fff',
                         }}
                     >
                         {renderContent()}
                     </Content>
                 </Layout>
             </Layout>
-        </Layout>
-    );
+        </Layout>);
 };
 
 export default MenuComponent;
