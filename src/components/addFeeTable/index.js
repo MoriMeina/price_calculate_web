@@ -11,7 +11,7 @@ const EditableCell = ({
 
     useEffect(() => {
         if (dataIndex === 'version') {
-            axios.get('/yd_zwy/api/GetYearVersion')
+            axios.get('/yd_xc/api/GetYearVersion')
                 .then(response => {
                     setSelectOptions(response.data);
                 })
@@ -59,7 +59,7 @@ const AddFeeTable = () => {
 
     useEffect(() => {
         // 获取 AddFee 数据
-        axios.get('/yd_zwy/api/DescribeAddFee')
+        axios.get('/yd_xc/api/DescribeAddFee')
             .then(response => {
                 setData(response.data.map(item => ({ ...item, key: item.id }))); // 使用 id 作为 key
             })
@@ -68,7 +68,7 @@ const AddFeeTable = () => {
             });
 
         // 获取版本数据
-        axios.get('/yd_zwy/api/GetYearVersion')
+        axios.get('/yd_xc/api/GetYearVersion')
             .then(response => {
                 setVersions(response.data);
             })
@@ -98,7 +98,7 @@ const AddFeeTable = () => {
             const row = await form.validateFields();
             const updatedRecord = { ...row, id: key }; // 使用 id 替代 key
 
-            await axios.put(`/yd_zwy/api/UpdateAddFee/${key}`, updatedRecord);
+            await axios.put(`/yd_xc/api/UpdateAddFee/${key}`, updatedRecord);
 
             const newData = [...data];
             const index = newData.findIndex((item) => key === item.key);
@@ -119,7 +119,7 @@ const AddFeeTable = () => {
 
     const deleteAddFee = async (key) => {
         try {
-            await axios.delete(`/yd_zwy/api/DeleteAddFee/${key}`);
+            await axios.delete(`/yd_xc/api/DeleteAddFee/${key}`);
             setData(data.filter(item => item.key !== key));
             message.success('记录删除成功！');
         } catch (error) {
@@ -131,7 +131,7 @@ const AddFeeTable = () => {
     const addNewAddFee = async () => {
         try {
             const values = await addForm.validateFields();
-            const response = await axios.post('/yd_zwy/api/AddAddFee', values);
+            const response = await axios.post('/yd_xc/api/AddAddFee', values);
             const newRecord = response.data.data;
             setData([...data, { ...newRecord, key: newRecord.id }]); // 使用返回的 id 设置 key
             addForm.resetFields();

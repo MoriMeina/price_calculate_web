@@ -12,7 +12,7 @@ const ChartsComponent = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const [roseResponse, columnResponse, pieResponse, radarResponse, RadialBarResponse] = await Promise.all([axios.get('/yd_zwy/api/stats/city'), axios.get('/yd_zwy/api/stats/unit'), axios.get('/yd_zwy/api/stats/service'), axios.get('/yd_zwy/api/stats/bill_subject'), axios.get('/yd_zwy/api/stats/system')]);
+                const [roseResponse, columnResponse, pieResponse, radarResponse, RadialBarResponse] = await Promise.all([axios.get('/yd_xc/api/stats/city'), axios.get('/yd_xc/api/stats/unit'), axios.get('/yd_xc/api/stats/service'), axios.get('/yd_xc/api/stats/bill_subject'), axios.get('/yd_xc/api/stats/system')]);
 
                 // console.log('Rose Data:', roseResponse.data);
                 // console.log('Column Data:', columnResponse.data);

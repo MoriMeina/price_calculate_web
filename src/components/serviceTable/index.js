@@ -42,7 +42,7 @@ const ServiceTable = () => {
 
     useEffect(() => {
         // Fetch tree data from backend
-        axios.get('/yd_zwy/api/getServiceByTree')
+        axios.get('/yd_xc/api/getServiceByTree')
             .then(response => {
                 const treeData = response.data;
                 setOptions(treeData);
@@ -100,7 +100,7 @@ const ServiceTable = () => {
             const newEntry = await addForm.validateFields();
 
             // 调用后端添加接口
-            axios.post('/yd_zwy/api/addService', newEntry)
+            axios.post('/yd_xc/api/addService', newEntry)
                 .then(() => {
                     fetchData();  // 重新获取数据
                     addForm.resetFields(); // 清空表单
@@ -123,7 +123,7 @@ const ServiceTable = () => {
     };
 
     const fetchData = () => {
-        axios.get('/yd_zwy/api/getService')
+        axios.get('/yd_xc/api/getService')
             .then(response => {
                 setData(response.data);
             })
@@ -158,7 +158,7 @@ const ServiceTable = () => {
                 setEditingKey('');
 
                 // 调用后端更新接口
-                axios.put(`/yd_zwy/api/updateService/${uuid}`, row)
+                axios.put(`/yd_xc/api/updateService/${uuid}`, row)
                     .then(() => {
                         message.success('更新成功');
                     })
@@ -177,7 +177,7 @@ const ServiceTable = () => {
     };
 
     const handleDelete = (uuid) => {
-        axios.delete(`/yd_zwy/api/deleteService/${uuid}`)
+        axios.delete(`/yd_xc/api/deleteService/${uuid}`)
             .then(() => {
                 setData(data.filter(item => item.uuid !== uuid));
                 message.success('删除成功');

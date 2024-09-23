@@ -11,7 +11,7 @@ const EditableCell = ({
 
     useEffect(() => {
         if (dataIndex === 'version') {
-            axios.get('/yd_zwy/api/GetYearVersion')
+            axios.get('/yd_xc/api/GetYearVersion')
                 .then(response => {
                     setSelectOptions(response.data);
                 })
@@ -59,7 +59,7 @@ const PriceTable = () => {
 
     useEffect(() => {
         // 获取价格数据
-        axios.get('/yd_zwy/api/DescribePrice')
+        axios.get('/yd_xc/api/DescribePrice')
             .then(response => {
                 setData(response.data);
             })
@@ -68,7 +68,7 @@ const PriceTable = () => {
             });
 
         // 获取版本数据
-        axios.get('/yd_zwy/api/GetYearVersion')
+        axios.get('/yd_xc/api/GetYearVersion')
             .then(response => {
                 setVersions(response.data);
             })
@@ -102,7 +102,7 @@ const PriceTable = () => {
             const row = await form.validateFields();
             const updatedRecord = { ...row, key };
 
-            await axios.put(`/yd_zwy/api/UpdatePrice/${key}`, updatedRecord);
+            await axios.put(`/yd_xc/api/UpdatePrice/${key}`, updatedRecord);
 
             const newData = [...data];
             const index = newData.findIndex((item) => key === item.key);
@@ -123,7 +123,7 @@ const PriceTable = () => {
 
     const deletePrice = async (key) => {
         try {
-            await axios.delete(`/yd_zwy/api/DeletePrice/${key}`);
+            await axios.delete(`/yd_xc/api/DeletePrice/${key}`);
             setData(data => data.filter(item => item.key !== key));  // 更新状态时使用函数形式
             message.success('记录删除成功！');
         } catch (error) {
@@ -136,7 +136,7 @@ const PriceTable = () => {
     const addNewPrice = async () => {
         try {
             const values = await addForm.validateFields();
-            const response = await axios.post('/yd_zwy/api/AddPrice', values);
+            const response = await axios.post('/yd_xc/api/AddPrice', values);
 
             if (response.data.success) {
                 setData([...data, { ...response.data.data, key: response.data.data.uuid }]);

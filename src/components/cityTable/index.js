@@ -51,7 +51,7 @@ const App = () => {
     const [addForm] = Form.useForm(); // 表单用于添加新记录
 
     useEffect(() => {
-        axios.get('/yd_zwy/api/DescribeCity')
+        axios.get('/yd_xc/api/DescribeCity')
             .then(response => {
                 setData(response.data);
             })
@@ -77,7 +77,7 @@ const App = () => {
             const row = await form.validateFields();
             const updatedRecord = { ...row, key };
 
-            await axios.put(`/yd_zwy/api/UpdateCity/${key}`, updatedRecord);
+            await axios.put(`/yd_xc/api/UpdateCity/${key}`, updatedRecord);
 
             const newData = [...data];
             const index = newData.findIndex((item) => key === item.key);
@@ -103,7 +103,7 @@ const App = () => {
             const { uuid, ...dataToSend } = values;
 
             // 发送 POST 请求添加新城市
-            const response = await axios.post('/yd_zwy/api/AddCity', dataToSend);
+            const response = await axios.post('/yd_xc/api/AddCity', dataToSend);
             const responseData = response.data;
 
             if (responseData.success) {
@@ -130,7 +130,7 @@ const App = () => {
 
     const deleteCity = async (key) => {
         try {
-            await axios.delete(`/yd_zwy/api/DeleteCity/${key}`);
+            await axios.delete(`/yd_xc/api/DeleteCity/${key}`);
             setData(data.filter(item => item.key !== key));
             message.success('城市删除成功！');
         } catch (error) {

@@ -62,7 +62,7 @@ const AddButton = (props) => {
     useEffect(() => {
         form.setFieldsValue({product: 'ECS'});
         // Fetch the tree data
-        axios.get("/yd_zwy/api/getServiceByTree")
+        axios.get("/yd_xc/api/getServiceByTree")
             .then((response) => {
                 setCityList(response.data);
             })
@@ -70,7 +70,7 @@ const AddButton = (props) => {
                 console.error("Error fetching the tree data:", error);
             });
         console.log("version", version);
-        axios.get("/yd_zwy/api/GetAddFee", {params: {addVersion}}) // 带上 version 参数
+        axios.get("/yd_xc/api/GetAddFee", {params: {addVersion}}) // 带上 version 参数
             .then((response) => {
                 setAddFee(response.data);
             })
@@ -112,7 +112,7 @@ const AddButton = (props) => {
     };
     useEffect(() => {
         // Fetch format list based on product value
-        axios.get("/yd_zwy/api/getFormatsByProduct", {params: {product: productValue}})
+        axios.get("/yd_xc/api/getFormatsByProduct", {params: {product: productValue}})
             .then((response) => {
                 setFormatList(response.data); // Update format list
                 form.resetFields(['format']); // Reset format selection
@@ -224,7 +224,7 @@ const AddButton = (props) => {
         };
         console.log("添加请求字段:", addrq);
         setAddRequest(addrq);
-        axios.post("/yd_zwy/api/Calculate", addrq)
+        axios.post("/yd_xc/api/Calculate", addrq)
             .then((response) => {
                 setPriceNow(response.data.monthly_price);
                 console.log("当前价格:", response.data);
@@ -244,7 +244,7 @@ const AddButton = (props) => {
     const handleCreate = () => {
         setConfirmLoading(true);
 
-        axios.post("/yd_zwy/api/CreateCost", addRequest)
+        axios.post("/yd_xc/api/CreateCost", addRequest)
             .then((response) => {
                 if (response.status === 200 || response.status === 201) {
                     notification.success({

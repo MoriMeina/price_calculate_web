@@ -207,7 +207,7 @@ const CostTable = (props) => {
         setSelectKey(key)
 
         try {
-            axios.get("/yd_zwy/api/GetAddFee", {params: {addVersion}}) // 带上 version 参数
+            axios.get("/yd_xc/api/GetAddFee", {params: {addVersion}}) // 带上 version 参数
                 .then((response) => {
                     setAddFee(response.data);
                 })
@@ -215,7 +215,7 @@ const CostTable = (props) => {
                     console.error("Error fetching the AddFee data:", error);
                 })
             // 请求数据
-            const response = await axios.get(`/yd_zwy/api/getCostByKey`, {
+            const response = await axios.get(`/yd_xc/api/getCostByKey`, {
                 params: {key}
             });
 
@@ -262,7 +262,7 @@ const CostTable = (props) => {
             });
 
             const productBack = data.resource_type;
-            axios.get('/yd_zwy/api/getFormatsByProduct', {params: {product: productBack}})
+            axios.get('/yd_xc/api/getFormatsByProduct', {params: {product: productBack}})
                 .then(response => {
                     const formats = response.data.map(format => ({
                         title: format.label, value: format.value,
@@ -322,7 +322,7 @@ const CostTable = (props) => {
 
     const handleChangeOK = () => {
         setConfirmLoading(true)
-        axios.post("/yd_zwy/api/ModifyCost", modifyRequest)
+        axios.post("/yd_xc/api/ModifyCost", modifyRequest)
             .then((response) => {
                 if (response.status === 200 || response.status === 201) {
                     notification.success({
@@ -360,7 +360,7 @@ const CostTable = (props) => {
     }
     const handleCancelOK = () => {
         setConfirmLoading(true)
-        axios.post("/yd_zwy/api/CancelCost", cancelRequest)
+        axios.post("/yd_xc/api/CancelCost", cancelRequest)
             .then((response) => {
                 if (response.status === 200 || response.status === 201) {
                     notification.success({
@@ -403,8 +403,9 @@ const CostTable = (props) => {
         setIsCancelModalOpen(true)
         // 处理注销按钮点击事件
         message.info(`注销操作，Key: ${key}`);
+        setSelectKey(key)
         try {
-            axios.get("/yd_zwy/api/GetAddFee", {params: {addVersion}}) // 带上 version 参数
+            axios.get("/yd_xc/api/GetAddFee", {params: {addVersion}}) // 带上 version 参数
                 .then((response) => {
                     setAddFee(response.data);
                 })
@@ -412,7 +413,7 @@ const CostTable = (props) => {
                     console.error("Error fetching the AddFee data:", error);
                 })
             // 请求数据
-            const response = await axios.get(`/yd_zwy/api/getCostByKey`, {
+            const response = await axios.get(`/yd_xc/api/getCostByKey`, {
                 params: {key}
             });
 
@@ -459,7 +460,7 @@ const CostTable = (props) => {
             });
 
             const productBack = data.resource_type;
-            axios.get('/yd_zwy/api/getFormatsByProduct', {params: {product: productBack}})
+            axios.get('/yd_xc/api/getFormatsByProduct', {params: {product: productBack}})
                 .then(response => {
                     const formats = response.data.map(format => ({
                         title: format.label, value: format.value,
@@ -500,7 +501,7 @@ const CostTable = (props) => {
         const fetchData = async () => {
             setTableLoading(true);
             try {
-                const response = await axios.post('/yd_zwy/api/DescribeCost', PostBody);
+                const response = await axios.post('/yd_xc/api/DescribeCost', PostBody);
                 const uniquePayments = [...new Set(response.data.map(({payment}) => payment))];
                 const filters = uniquePayments.map(payment => ({text: payment, value: payment}));
                 setPaymentFilters(filters);

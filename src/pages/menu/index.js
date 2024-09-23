@@ -16,7 +16,7 @@ const NavSide = ({setVersionSelected, setSelectedProject}) => {
     const [selectedTree, setSelectedTree] = useState([]);
 
     useEffect(() => {
-        axios.get('/yd_zwy/api/getServiceByTree')
+        axios.get('/yd_xc/api/getServiceByTree')
             .then(response => {
                 setTreeData(Array.isArray(response.data) ? response.data : []);
             })
@@ -25,7 +25,7 @@ const NavSide = ({setVersionSelected, setSelectedProject}) => {
                 setTreeData([]);
             });
 
-        axios.get('/yd_zwy/api/GetYearVersion')
+        axios.get('/yd_xc/api/GetYearVersion')
             .then(response => {
                 setVersionData(Array.isArray(response.data) ? response.data : []);
             })
@@ -33,7 +33,7 @@ const NavSide = ({setVersionSelected, setSelectedProject}) => {
                 console.error('Error fetching version data:', error);
                 setVersionData([]);
             });
-        axios.get('/yd_zwy/api/getAllService')
+        axios.get('/yd_xc/api/getAllService')
             .then(response => {
                 setSelectedTree(Array.isArray(response.data) ? response.data : []);
                 setSelectedProject(Array.isArray(response.data) ? response.data : []);
